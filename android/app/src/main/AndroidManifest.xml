@@ -13,7 +13,7 @@
 
     <application
 
-        android:label="testrandom"
+        android:label="SprintS"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

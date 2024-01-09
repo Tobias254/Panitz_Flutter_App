@@ -1,5 +1,6 @@
-import 'dart:io';
+// ignore_for_file: avoid_print, unused_field, library_private_types_in_public_api, must_be_immutable, type_literal_in_constant_pattern, unnecessary_cast, non_constant_identifier_names
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:async';
 //Esense Library
@@ -9,20 +10,18 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
 //Diagramme
 import 'package:fl_chart/fl_chart.dart';
-//Sliver Bar Chart
-import 'package:sliver_bar_chart/sliver_bar_chart.dart';
 
-//Sliver Bar Chart
-
+//Main
 void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key); //Konstruktor
+  const MyApp({super.key}); //Konstruktor
 
   @override
   _MyAppState createState() => _MyAppState();
 }
 
+//Globale Variabeln
 class _MyAppState extends State<MyApp> {
   String _deviceName = 'Unknown';
   double _voltage = -1;
@@ -37,101 +36,161 @@ class _MyAppState extends State<MyApp> {
   //Erstelle eine Diagramm-Liste
   List<MyDiagram> sprintS = <MyDiagram>[];
 
-
   // Eigene Widgets
-  // Test
-  Widget ifPressed(){
-    return SliverToBoxAdapter(
-      child: Text('eSense Button Event: \t$_button')
-    );
-  }
 
-  Widget Dumb(){
-    return SliverToBoxAdapter(
-      child: Text('Du hast den Knopf gedrückt!')
-    );
-  }
-
-  /*Widget createDiagrams(List<MyDiagram> finalList){
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-          (BuildContext context, int index){
-            return SliverToBoxAdapter(
+  //create Diagrams erzeugt dynamisch auf Knopfdruck Diagramme, die die Beschleunigung des Nutzer über einen Zeitraum von 10s anzeigt
+  Widget createDiagrams(List<MyDiagram> finalList) {
+    if (finalList.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(60)),
+              color: Colors.red.withOpacity(0.2),
+            ),
+            margin: const EdgeInsets.all(30.0),
+            height: 100,
+            width: 300,
+            child: Align(
+              alignment: Alignment.center,
+              child: Text(
+                "Noch keine Einträge vorhanden",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black.withOpacity(0.5),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (BuildContext context, int index) {
+            List<FlSpot> currentSpotList = finalList[index].myDiagramList;
+            return SizedBox(
+              height: 200,
               child: LineChart(
                 LineChartData(
+                  minX: 0,
+                  maxX: 10,
+                  minY: -20,
+                  maxY: 20,
+                  borderData: FlBorderData(show: true),
+                  gridData: FlGridData(
+                    show: true,
+                    getDrawingHorizontalLine: (value) {
+                      return const FlLine(
+                        color: Colors.blueGrey,
+                        strokeWidth: 1,
+                      );
+                    },
+                    getDrawingVerticalLine: (value) {
+                      return const FlLine(
+                        color: Colors.blueGrey,
+                        strokeWidth: 0.2,
+                      );
+                    },
+                  ),
+                  titlesData: const FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 50,
+                      ),
+                    ),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 50,
+                      ),
+                    ),
+
+                    //rightTitles: AxisTitles(ShowTitles: false),
+                  ),
                   lineBarsData: [
                     LineChartBarData(
-                      spots: finalList[0].myDiagramList,
-                      isCurved: true,
-                      color: Colors.blue,
-                      dotData: FlDotData(show: false),
-                      belowBarData: BarAreaData(show: false),
-                    ),
+                        spots: currentSpotList,
+                        isCurved: true,
+                        barWidth: 4,
+                        dotData: const FlDotData(show: false),
+                        color: Colors.red,
+                        belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.red.withOpacity(0.7),
+                                Colors.white60,
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ))),
                   ],
                 ),
               ),
             );
-          }
-      ),
-    );
-  }*/
-  Widget test(List<MyDiagram> finalList){
-    if(finalList.length==0){
-      return SliverToBoxAdapter(
-        child: Text(
-          'Keine Einträge vorhanden'
-        )
-      );
-    } else{
-      return SliverToBoxAdapter(
-        child: Text(
-          'Jetzt hab ich Kinder: ' + finalList[0].myDiagramList.length.toString(),
-        )
+          },
+          childCount: finalList.length,
+        ),
       );
     }
   }
-  Widget createDiagrams(List<MyDiagram> finalList) {
-    return
-      SliverList(
-      delegate: SliverChildBuilderDelegate(
-          (BuildContext context, int index){
-            if (finalList.isEmpty){
-              return const SliverToBoxAdapter(
-                child: Center(
-                  child: Text(
-                    'Keine Einträge vorhanden'
-                  ),
-                ),
-              );
-            } else {
-              List<FlSpot> currentSpotList = finalList[index].myDiagramList;
-              return SliverToBoxAdapter(
-                child: LineChart(
-                LineChartData(
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: currentSpotList,
-                      isCurved: true,
-                    ),
-                  ],
-                ),
+
+  //Die AppBar erzeugt eine dynamische AppBar, die zu Beginn ein Rennrad zeigt und sich beim nach untenscrollen versteckt
+  Widget appBar() {
+    return SliverAppBar(
+      shape: const ContinuousRectangleBorder(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(60),
+          bottomRight: Radius.circular(60),
+        ),
+      ),
+      pinned: true,
+      floating: true,
+      expandedHeight: 160.0,
+      flexibleSpace: FlexibleSpaceBar(
+        title: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.6),
+            borderRadius: const BorderRadius.all(Radius.circular(30)),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'SprintS',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
               ),
-              );
-            }
-          },
-        childCount: finalList.isEmpty ? 1: finalList.length,
+            ),
+          ),
+        ),
+        centerTitle: true,
+        background: Image.asset(
+          'images/bike.jpg',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
 
-
-  Widget connectButtons(){
+  //Diese Buttons dienen dazu die Kopfhörer mit der App zu verbinden und den Gerätenamen von E-Sense anzuzeigen
+  Widget connectButtons() {
     return SliverList(
       delegate: SliverChildListDelegate([
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Colors.red.withOpacity(0.8)),
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+              ),
               onPressed: () {
                 _connectToESense();
               },
@@ -139,7 +198,9 @@ class _MyAppState extends State<MyApp> {
             ),
             ElevatedButton(
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Colors.red.withOpacity(0.8)),
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
               ),
               onPressed: () {
                 // Aktion für den zweiten Button
@@ -152,8 +213,48 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  // the name of the eSense device to connect to -- change this to your own device.
-  // String eSenseName = 'eSense-0164';
+  //Der Reset Button, löscht alle Elemente der Liste. So kann man z.B. alte Daten löschen und eine neue Fahrt beginnen.
+  Widget resetButton() {
+    return SliverList(
+      delegate: SliverChildListDelegate(
+        [
+          Column(
+            children: [
+              SizedBox(
+                  width: 200,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Hier kannst du deine gewünschte Funktion einfügen
+                      print('Setze den Datensatz zurueck');
+                      sprintS = <MyDiagram>[];
+                      _pauseListenToSensorEvents();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent, // Hintergrundfarbe
+                      foregroundColor: Colors.white, // Textfarbe
+                      minimumSize: const Size(100.0, 50.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(26.0), // abgerundete Ecken
+                      ),
+                    ),
+                    child: const Text(
+                      'Reset',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ))
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  // Name des E-Sense Gerätes --> Wurde zu dem uns übergebenen Kopfhörer geändert
+  // String eSenseName = 'eSense-0164'; - In unserem Fall heißt das Gerät "HB"
   static const String eSenseDeviceName = 'HB';
   ESenseManager eSenseManager = ESenseManager(eSenseDeviceName);
 
@@ -164,20 +265,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _askForPermissions() async {
-    if (!(await Permission.bluetoothScan
-        .request()
-        .isGranted &&
-        await Permission.bluetoothConnect
-            .request()
-            .isGranted)) {
+    if (!(await Permission.bluetoothScan.request().isGranted &&
+        await Permission.bluetoothConnect.request().isGranted)) {
       print(
           'WARNING - no permission to use Bluetooth granted. Cannot access eSense device.');
     }
     // for some strange reason, Android requires permission to location for Bluetooth to work.....?
     if (Platform.isAndroid) {
-      if (!(await Permission.locationWhenInUse
-          .request()
-          .isGranted)) {
+      if (!(await Permission.locationWhenInUse.request().isGranted)) {
         print(
             'WARNING - no permission to access location granted. Cannot access eSense device.');
       }
@@ -187,12 +282,9 @@ class _MyAppState extends State<MyApp> {
   Future<void> _listenToESense() async {
     await _askForPermissions();
 
-    // if you want to get the connection events when connecting,
-    // set up the listener BEFORE connecting...
     eSenseManager.connectionEvents.listen((event) {
       print('CONNECTION event: $event');
 
-      // when we're connected to the eSense device, we can start listening to events from it
       if (event.type == ConnectionType.connected) _listenToESenseEvents();
 
       setState(() {
@@ -210,10 +302,10 @@ class _MyAppState extends State<MyApp> {
             sampling = false;
             break;
           case ConnectionType.device_found:
-            _deviceStatus = 'device_found';
+            _deviceStatus = 'found';
             break;
           case ConnectionType.device_not_found:
-            _deviceStatus = 'device_not_found';
+            _deviceStatus = 'no device found';
             break;
         }
       });
@@ -231,93 +323,68 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  List<double> _handleAccel(SensorEvent event){
-    if(event.accel != null){
-      return [
-      event.accel![0].toDouble(),
-      event.accel![1].toDouble(),
-      event.accel![2].toDouble(),
-    ];
-    } else{
-      return [0.0, 0.0, 0.0];
-    }
-
-  }
-  //Spielt den Startsound für die Sensor-Daten-Erfassung
-  void playStartSound() async{
+  //Spielt den Startsound für die Sensor-Daten-Erfassung: Sprint Beginnt
+  void playStartSound() async {
     final player = AudioPlayer();
     player.play(AssetSource('audio/beep.mp3'));
   }
 
-  void playStopSound() async{
+  //Spielt den EndSound für die Sensor-Daten-Erfassung: Sprint Abgeschlossen
+  void playStopSound() async {
     final player = AudioPlayer();
     player.play(AssetSource('audio/achieve.mp3'));
   }
 
-  void addListElement(List<MyDiagram> oldList) async{
-    bool listInit = false;
+  //Fügt der Liste ein neues Element hinzu, sobald der Sprint abgeschlossen ist.
+  void addListElement(List<MyDiagram> oldList) {
     int listLength = oldList.length;
     MyDiagram temp = MyDiagram();
-    temp.myDiagramName = 'Sprint ' + listLength.toString();
+    temp.myDiagramName = 'Sprint $listLength';
     print(temp.myDiagramName);
     _startListenToSensorEvents();
     temp.myDiagramList = getSensorDataForList(temp).myDiagramList;
-    sprintS.add(temp);
-    print('Anzahl Diagramme: ' + sprintS.length.toString());
-    print('Sensorwerte: ' + _event);
-    Future.delayed(Duration(seconds: 11), (){
-      listInit = true;
-      setState(() {
-        sprintS.length;
-      });
-      playStopSound();
-      _pauseListenToSensorEvents();
-    });
-    // _pauseListenToSensorEvents();
   }
 
-  MyDiagram getSensorDataForList(MyDiagram uebergabe){
-    //List<FlSpot> tempList = uebergabe.myDiagramList;
-    //FlSpot temp;
-    double Seconds = 0;
-    double currentAccel;
-    Timer.periodic(Duration(milliseconds: 200), (Timer timer){
-      currentAccel = _eventAccel;
+  //Dient dazu die Sensordaten innerhalb eines Intervalls von 10-Sekunden zu sammeln
+  MyDiagram getSensorDataForList(MyDiagram uebergabe) {
+    double Seconds = 0.0;
+    double currentAccel = 0;
+    Timer.periodic(const Duration(milliseconds: 200), (Timer timer) {
+      currentAccel = _eventAccel == 0 ? 0 : _eventAccel / 1000;
       uebergabe.myDiagramList.add(FlSpot(Seconds, currentAccel));
       Seconds += 0.2;
-      print('Beschleunigung: ' + currentAccel.toString());
+      print('Beschleunigung: $currentAccel');
       print(Seconds);
       //Wenn 10 Sekunden vorbei sind, soll der Timer abbrechen.
-      if (Seconds >= 9.8){
+      if (Seconds >= 9.8) {
         timer.cancel();
+        sprintS.add(uebergabe);
+        print("Länge: ${sprintS.length}");
+        print("Länge eines Elements: ${sprintS[0].myDiagramList.length}");
+        print('Anzahl Diagramme: ${sprintS.length}');
+        print('Sensorwerte: $_event');
+        playStopSound();
+        _pauseListenToSensorEvents();
       }
     });
 
     return uebergabe;
-
   }
+
   //Solange der PlayButton auf play ist, solange soll die Funktion createDiagramEntry aufgerufen werden
-  void whilePlay() async{
-    //print('in here');
-    if(_myPlayWidget.getWidgetIsPlay()){
-      //print('widget isplay: ' + _myPlayWidget.getWidgetIsPlay().toString());
-      //_createDiagramEntry();
+  void whilePlay() async {
+    if (_myPlayWidget.getWidgetIsPlay()) {
       print('Fahrradtour begonnen');
       playStartSound();
       //Der Signalton geht 4 Sekunden lang. Erst danach sollen die Werte gemessen werden.
-      Future.delayed(Duration(seconds: 4), (){
+      Future.delayed(const Duration(seconds: 4), () {
         addListElement(sprintS);
       });
     } else {
       print('Beginne zuerst deine Fahrradtour!');
     }
   }
-  void _createDiagramEntry() async {
-    //MyDiagramList Hubert;
-    if (_deviceStatus=='connected'&& _myPlayWidget.getWidgetIsPlay()==true){
-      print('tracking...');
-    }
-  }
+
   void _listenToESenseEvents() async {
     eSenseManager.eSenseEvents.listen((event) {
       print('ESENSE event: $event');
@@ -334,18 +401,9 @@ class _MyAppState extends State<MyApp> {
             _button = (event as ButtonEventChanged).pressed
                 ? 'pressed'
                 : 'not pressed';
-            if((event as ButtonEventChanged).pressed) {
+            if ((event as ButtonEventChanged).pressed) {
               whilePlay();
             }
-            break;
-          case AccelerometerOffsetRead:
-          // TODO
-            break;
-          case AdvertisementAndConnectionIntervalRead:
-          // TODO
-            break;
-          case SensorConfigRead:
-          // TODO
             break;
         }
       });
@@ -358,39 +416,32 @@ class _MyAppState extends State<MyApp> {
     // get the battery level every 10 secs
     Timer.periodic(
       const Duration(seconds: 10),
-          (timer) async =>
-      (connected) ? await eSenseManager.getBatteryVoltage() : null,
+      (timer) async =>
+          (connected) ? await eSenseManager.getBatteryVoltage() : null,
     );
 
-    // wait 2, 3, 4, 5, ... secs before getting the name, offset, etc.
-    // it seems like the eSense BTLE interface does NOT like to get called
-    // several times in a row -- hence, delays are added in the following calls
     Timer(const Duration(seconds: 2),
-            () async => await eSenseManager.getDeviceName());
+        () async => await eSenseManager.getDeviceName());
     Timer(const Duration(seconds: 3),
-            () async => await eSenseManager.getAccelerometerOffset());
+        () async => await eSenseManager.getAccelerometerOffset());
     Timer(
         const Duration(seconds: 4),
-            () async =>
-        await eSenseManager.getAdvertisementAndConnectionInterval());
+        () async =>
+            await eSenseManager.getAdvertisementAndConnectionInterval());
     Timer(const Duration(seconds: 15),
-            () async => await eSenseManager.getSensorConfig());
+        () async => await eSenseManager.getSensorConfig());
   }
 
   StreamSubscription? subscription;
 
   void _startListenToSensorEvents() async {
-    // // any changes to the sampling frequency must be done BEFORE listening to sensor events
-    // print('setting sampling frequency...');
-    // await eSenseManager.setSamplingRate(10);
 
-    // subscribe to sensor event from the eSense device
     subscription = eSenseManager.sensorEvents.listen((event) {
       //Unterhalb ist eine Kontrolle, ob alle Sensorwerte ausgegeben werden
-      print('SENSOR event: $event');
+      //print('SENSOR event: $event');
       setState(() {
         _event = event.toString();
-        _eventAccel = event.accel![0].toDouble();
+        _eventAccel = event.accel![1].toDouble();
       });
     });
     setState(() {
@@ -412,184 +463,24 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
-/*
   @override
-  Widget build(BuildContext context) {
-    //Material App ist das Material Design --> Design von Google (Quasi default)
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('SprintS'),
-          centerTitle: true,
-        ),
-        body: Align(
-          alignment: Alignment.topLeft,
-          child:
-            ListView(
-            children: <Widget> [
-              Text('eSense Device Status: \t$_deviceStatus'),
-              Text('eSense Device Name: \t$_deviceName'),
-              Text('eSense Battery Level: \t$_voltage'),
-              Text('eSense Button Event: \t$_button'),
-              const Text(''),
-              const Text(''),
-              const Text(''),
-              const Text(''),
-              Text(_event),
-              const Text(''),
-              const Text(''),
-              Container(
-                height: 100,
-                width: 200,
-                decoration:
-                BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.amber),
-                padding: EdgeInsets.all(8.0),
-                child: TextButton.icon(
-                  onPressed: _connectToESense,
-                  icon: const Icon(Icons.login_outlined, size: 48),
-                  label: const Text(
-                    'CONNECT....',
-                    style: TextStyle(fontSize: 48),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-        ),
-
-        floatingActionButton: FloatingActionButton(
-          // a floating button that starts/stops listening to sensor events.
-          // is disabled until we're connected to the device.
-          onPressed: (!eSenseManager.connected)
-              ? null
-              : (!sampling)
-              ? _startListenToSensorEvents
-              : _pauseListenToSensorEvents,
-          tooltip: 'Listen to eSense sensors',
-          child: (!sampling)
-              ? const Icon(Icons.play_arrow)
-              : const Icon(Icons.pause),
-        ),
-
-      ),
-    );
-  }
-}
- */
-/*
-  @override
-  Widget build(BuildContext context) {
-    //Material App ist das Material Design --> Design von Google (Quasi default)
-    return MaterialApp(
-        home: Scaffold(
-            body: CustomScrollView(
-                slivers: <Widget>[
-                  SliverAppBar(
-                    shape: ContinuousRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(30),
-                        bottomRight: Radius.circular(30),
-        ),
-                    ),
-
-                    pinned: true,
-                    floating: true,
-                    expandedHeight: 160.0,
-                      flexibleSpace: FlexibleSpaceBar(
-                         title: Container(
-                           decoration: BoxDecoration(
-                           color: Colors.white.withOpacity(0.5),
-                           borderRadius: BorderRadius.all(Radius.circular(30)),
-    ),
-                           child: Padding(
-                             padding: const EdgeInsets.all(8.0),
-                             child: Text(
-                               'SprintS',
-                               style: TextStyle(
-                                 color: Colors.black,
-                                 fontWeight: FontWeight.bold,
-                                 letterSpacing: 2,
-                               ),
-                             ),
-                           ),
-                         ),
-                          centerTitle: true,
-                          background: Image.asset(
-                          'images/bike.jpg',
-                          fit: BoxFit.cover,
-                      ),
-                      ),
-
-
-
-
-                  ),
-                ],
-            ),
-        ),
-    );
-  }
-}*/
-
-  @override
+  //Das ist der Widget Tree: So ist die App von oben nach unten aufgebaut
   Widget build(BuildContext context) {
     //Material App ist das Material Design --> Design von Google (Quasi default)
     return MaterialApp(
       home: Scaffold(
         body: CustomScrollView(
           slivers: <Widget>[
-            SliverAppBar(
-              shape: ContinuousRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(60),
-                  bottomRight: Radius.circular(60),
-                ),
-              ),
-              pinned: true,
-              floating: true,
-              expandedHeight: 160.0,
-              flexibleSpace: FlexibleSpaceBar(
-                title: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.5),
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'SprintS',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ),
-                ),
-                centerTitle: true,
-                background: Image.asset(
-                  'images/bike.jpg',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+            //Sliver App Bar, um das Bild einzubinden
+            appBar(),
+            //erzeugt 2 Buttons um die Kopfhörer mit der App zu verbinden
             connectButtons(),
+            //erzeugt einen PlayButton um eine Fahrradtour zu beginnen
             _myPlayWidget,
-            test(sprintS),
-            //createDiagrams(sprintS),
-            /*LineChart(
-                LineChartData(
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: testDiagram,
-                      isCurved: true,
-                    ),
-                  ],
-                ),
-              ),*/
-            ifPressed(),
-            // Hier kannst du weitere Sliver-Widgets hinzufügen, wenn benötigt
+            //Erzeugt eine dynamische Liste mit Diagrammen, die die Beschleunigungswerte über einen Zeitraum von 10s darstellen
+            createDiagrams(sprintS),
+            //setzt die Liste zurück um eine neue Tour zu beginnen
+            resetButton(),
           ],
         ),
       ),
@@ -597,94 +488,38 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-// Eigene Klassen
-/*
-class PlayWidget extends StatefulWidget {
-  const PlayWidget({Key? key}) : super(key: key);
-
-  @override
-  State<PlayWidget> createState() => _PlayWidgetState();
-}
-
-class _PlayWidgetState extends State<PlayWidget> with TickerProviderStateMixin{
-  bool _isplay = false;
-  late AnimationController _controller;
-  @override
-  void initState(){
-    _controller= AnimationController(
-      duration: const Duration(seconds: 1),
-      vsync: this,
-    );
-    super.initState();
-  }
-  @override
-  void dispose(){
-    _controller.dispose();
-        super.dispose();
-  }
-  @override
-  Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-        child: GestureDetector(
-        onTap: () {
-          if (_isplay == false) {
-            _controller.forward();
-            _isplay = true;
-          } else {
-            _controller.reverse();
-            _isplay = false;
-          }
-        },
-          child:AnimatedIcon(
-          icon: AnimatedIcons.play_pause,
-          progress: _controller,
-          size:100,
-        )
-      )
-    );
-  }
-}
-*/
-/*
-class MyDiagramList{
-  final double x;
-  final double y;
-  MyDiagramList(this.x, this.y);
-}*/
-
-class MyDiagram{
-  String myDiagramName ='';
+//Ein Diagramm besteht immer aus einem Namen und einer Liste mit FLSpots
+class MyDiagram {
+  String myDiagramName = '';
   //List<MyDiagramList> myDiagramList = [];
   List<FlSpot> myDiagramList = [];
 }
 
+//Das ist der animierte Play-Button
 class PlayWidget extends StatefulWidget {
   //final bool _isplay = false;
   bool widgetIsPlay = false;
-  PlayWidget({Key? key}) : super(key: key);
+  PlayWidget({super.key});
 
   @override
   State<StatefulWidget> createState() => PlayWidgetState();
-  //
-  // bool getIsPlay() {
-    // return _isplay;
-  // }
 
   bool getWidgetIsPlay() {
     return widgetIsPlay;
   }
 }
 
-class PlayWidgetState extends State<PlayWidget> with TickerProviderStateMixin{
+class PlayWidgetState extends State<PlayWidget> with TickerProviderStateMixin {
   bool _isplay = false;
+
   late AnimationController _controller;
 
-  bool getIsPlay(){
+  bool getIsPlay() {
     return _isplay;
   }
 
   @override
-  void initState(){
+  void initState() {
     _controller = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -693,7 +528,7 @@ class PlayWidgetState extends State<PlayWidget> with TickerProviderStateMixin{
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _controller.dispose();
     super.dispose();
   }
@@ -718,6 +553,7 @@ class PlayWidgetState extends State<PlayWidget> with TickerProviderStateMixin{
           },
           child: AnimatedIcon(
             icon: AnimatedIcons.play_pause,
+            color: Colors.red,
             progress: _controller,
             size: 100,
           ),
